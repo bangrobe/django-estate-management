@@ -1,0 +1,60 @@
+services:
+  api: &api # Create an anchor
+    build: 
+      context: . #root directory
+      dockerfile: ./docker/local/django/Dockerfile
+    image: estate_prod_api
+    container_name: estate_prod_api
+    volumes:
+      - .:/app:z
+      - staticfiles:/app/staticfiles:z
+    ports:
+      - "8002:8000"
+    env_file:
+      - ./.envs/.env.local
+    depends_on:
+      - postgres
+      - mailpit
+    command: /start
+    networks:
+      - estate_network
+
+  postgres:
+    build: 
+      context: . #root directory
+      dockerfile: ./docker/local/postgres/Dockerfile
+    image: estate_prod_postgres
+    container_name: estate_prod_postgres
+    volumes:
+      - estate_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    env_file:
+      - ./.envs/.env.local
+    networks:
+      - estate_network
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: estate_prod_mailpit
+    volumes:
+      - estate_mailpit_data:/data
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    ports:
+      - "8025:8025"
+    networks:
+      - estate_network
+
+networks:
+  estate_network:
+    driver: bridge
+    external: true
+
+volumes: 
+  estate_postgres_data: {}
+  estate_mailpit_data: {}
+  staticfiles: {}

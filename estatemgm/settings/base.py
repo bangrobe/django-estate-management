@@ -1,8 +1,9 @@
 from pathlib import Path
-
+from os import getenv, path
+from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
-BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
+BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 
 APPS_DIR = BASE_DIR / 'core_apps'
 
@@ -80,12 +81,15 @@ WSGI_APPLICATION = 'estatemgm.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": getenv("POSTGRES_DB"),
+        "USER": getenv("POSTGRES_USER"),
+        "PASSWORD": getenv("POSTGRES_PASSWORD"),
+        "HOST": getenv("POSTGRES_HOST"),
+        "PORT": getenv("POSTGRES_PORT"),
     }
 }
-
 #Using Argon2
 # https://docs.djangoproject.com/en/5.1/topics/auth/passwords/
 
@@ -146,3 +150,25 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 TAGGIT_CASE_INSENSITIVE = True
 
 AUTH_USER_MODEL = "users.User"
+
+# Setting
+
+if USE_TZ:
+    CELERY_TIME_ZONE = TIME_ZONE
+
+CELERY_BROKER_URL = getenv('CELERY_BROKER_URL', 'redis://redis:6379/0')
+CELERY_RESULT_BACKEND = getenv('CELERY_RESULT_BACKEND', 'redis://redis:6379/0')
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json' 
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_RESULT_BACKEND_MAX_RETRIES = 5
+
+CELERY_TASK_SEND_SENT_EVENT = True
+CELERY_RESULT_EXTENDED = True
+
+CELERY_RESULT_BACKEND_ALLOW_RETRY = True
+CELERY_TASK_TIME_LIMIT = 5 * 60
+CELERY_TASK_SOFT_TIME_LIMIT = 60
+
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+CELERY_WORKER_SEND_TASK_EVENTS = True
