@@ -10,13 +10,13 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 logger = logging.getLogger(__name__)
 
-def set_auth_cookies(response: Response, access_token: Optional[str], refresh_token: Optional[str]) -> Response:
+def set_auth_cookies(response: Response, access_token: Optional[str], refresh_token: Optional[str]) -> None:
     access_token_lifetime = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds()
     cookie_settings = {
-        'path': settings.COOK_PATH,
-        'secure': settings.COOK_SECURE,
-        'httponly': settings.COOK_HTTPONLY,
-        'samesite': settings.COOK_SAMESITE,
+        'path': settings.COOKIE_PATH,
+        'secure': settings.COOKIE_SECURE,
+        'httponly': settings.COOKIE_HTTPONLY,
+        'samesite': settings.COOKIE_SAMESITE,
         'max_age': access_token_lifetime,
     }
 
@@ -46,17 +46,19 @@ def set_auth_cookies(response: Response, access_token: Optional[str], refresh_to
     )
 
 
-class CustomObtainPairView(TokenObtainPairView):
-    def post(self, request: Request, *args, **kwargs):
+class CustomTokenObtainPairView(TokenObtainPairView):
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        print("Request Data: ",request.data)
         token_response = super().post(request, *args, **kwargs)
+        print(token_response.status_code)
         if token_response.status_code == status.HTTP_200_OK:
             access_token =  token_response.data.get('access')
             refresh_token = token_response.data.get('refresh')
             if access_token is not None and refresh_token is not None:
                 set_auth_cookies(token_response, access_token, refresh_token)
 
-                token_response.pop('access', None)
-                token_response.pop('refresh', None)
+                token_response.data.pop('access', None)
+                token_response.data.pop('refresh', None)
 
                 token_response.data["message"] = "Login Successful"
             else:
@@ -67,8 +69,8 @@ class CustomObtainPairView(TokenObtainPairView):
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request: Request, *args, **kwargs):
         refresh_token = request.COOKIES.get('refresh')
-
-        if refresh_token is None:
+        print("Refresh Token: ", refresh_token)
+        if refresh_token:
             request.data['refresh'] = refresh_token
         
         refresh_response = super().post(request, *args, **kwargs)
@@ -79,8 +81,8 @@ class CustomTokenRefreshView(TokenRefreshView):
             if access_token is not None and refresh_token is not None:
                 set_auth_cookies(refresh_response, access_token, refresh_token)
 
-                refresh_response.pop('access', None)
-                refresh_response.pop('refresh', None)
+                refresh_response.data.pop('access', None)
+                refresh_response.data.pop('refresh', None)
 
                 refresh_response.data["message"] = "Access Token Refreshed successfully"
             else:
@@ -114,5 +116,4 @@ class LogoutAPIView(APIView):
         response.delete_cookie(key="access")
         response.delete_cookie(key="refresh")
         response.delete_cookie(key="logged_in")
-        response.data["message"] = "Logout successful"
         return response

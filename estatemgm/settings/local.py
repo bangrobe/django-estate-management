@@ -13,7 +13,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 SITE_NAME = getenv('SITE_NAME', 'Estates Management')
-SECRET_KEY =  getenv('SECRET_KEY', 'django-insecure--_25sa8yzt8ktulcc+sbuo91)z7v)_vnv1x#=imsq-2kqb!ua=')
+SECRET_KEY =  getenv('DJANGO_SECRET_KEY', 'django-insecure--_25sa8yzt8ktulcc+sbuo91)z7v)_vnv1x#=imsq-2kqb!ua=')
 
 ADMIN_URL = getenv('DJANGO_ADMIN_URL', 'admin')
 EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
