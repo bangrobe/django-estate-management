@@ -13,6 +13,7 @@ services:
     depends_on:
       - postgres
       - mailpit
+      - redis
     networks:
       - estate_network
   api: 
@@ -45,7 +46,7 @@ services:
     volumes:
       - estate_redis_data:/data
     ports:
-      - "6380:6379"
+      - "6379:6379"
     networks:
       - estate_network
 
@@ -81,6 +82,7 @@ services:
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
     ports:
       - "8025:8025"
+      - "1025:1025"
     networks:
       - estate_network
 
