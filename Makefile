@@ -2,6 +2,8 @@ build:
 	docker compose -f local.yml up --build -d --remove-orphans
 up:
 	docker compose -f local.yml up -d
+up-no-d:
+	docker compose -f local.yml up
 down:
 	docker compose -f local.yml down
 down-v:
@@ -12,7 +14,7 @@ show-logs:
 show-logs-api:
 	docker compose -f local.yml logs -f api
 
-make-migrations:
+migrations:
 	docker compose -f local.yml run --rm api python manage.py makemigrations
 
 migrate:
