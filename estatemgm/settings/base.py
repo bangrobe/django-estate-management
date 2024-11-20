@@ -174,6 +174,12 @@ CELERY_TASK_SOFT_TIME_LIMIT = 60
 
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 CELERY_WORKER_SEND_TASK_EVENTS = True
+#After have some shared tasks
+CELERY_BEAT_SCHEDULE = {
+    "update-reputation-every-day": {
+        "task": "core_apps.profiles.tasks.update_all_reputations",
+    },
+}
 
 #Cloudinary
 
@@ -214,7 +220,11 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '1000/day',
         'user': '1000/day'
-    }
+    },
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ]
 }
 
 SIMPLE_JWT = {
@@ -243,6 +253,7 @@ DJOSER = {
     'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': getenv('REDIRECT_URIS').split(","),
     'SERIALIZERS': {
         'user_create': 'core_apps.users.serializers.CreateUserSerializer',
+        'current_user': 'core_apps.users.serializers.CustomUserSerializers'
     },
 }
 
