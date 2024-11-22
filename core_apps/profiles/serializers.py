@@ -1,7 +1,7 @@
 from .models import Profile
 from rest_framework import serializers
 from django_countries.serializer_fields import CountryField
-
+from core_apps.apartments.serializers import ApartmentSerializer
 class ProfileSerializer(serializers.ModelSerializer):
     first_name = serializers.ReadOnlyField(source="user.first_name")
     last_name = serializers.ReadOnlyField(source="user.last_name")
@@ -11,17 +11,28 @@ class ProfileSerializer(serializers.ModelSerializer):
     # SerializerMethodField. Do avatar chi lay url, ne dung method la get_avatar
     avatar = serializers.SerializerMethodField()
     date_joined = serializers.DateTimeField(source="user.date_joined", read_only=True)
+    apartment = serializers.SerializerMethodField()
     class Meta:
         model = Profile
         fields = [
             "id","slug","first_name","last_name","username","full_name","gender","occupation","avatar","bio",
             "phone_number","country_of_origin","city_of_origin","report_count",
-            "reputation","date_joined"
+            "reputation","date_joined","apartment"
         ]
     
     def get_avatar(self, obj):
         try:
             return obj.avatar.url
+        except AttributeError:
+            return None
+    
+    def get_apartment(self, obj):
+        try:
+            apartment = obj.user.apartment.first()
+            if apartment:
+                return ApartmentSerializer(apartment).data
+            else:
+                return None
         except AttributeError:
             return None
 
